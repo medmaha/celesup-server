@@ -25,7 +25,8 @@ build/
 fake_objects/
 __pychache__/
 MEDIA_FILES/
-venv_pakages
+venv_pakages/
+venv_modules/
 .env
 
 

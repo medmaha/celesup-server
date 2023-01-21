@@ -3,23 +3,46 @@ from datetime import timedelta, datetime
 
 import os
 
+DEBUG = bool(int(os.environ.get('DEBUG')))
+ 
+
+expiration_days = datetime.now() + timedelta(days=1)
+expiration_time = expiration_days - datetime.now()
 
 
-# CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOW_HEADERS ='*'
+SESSION_COOKIE_NAME = 'cs-sessionkey'
+SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
+SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE')))
+SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE')
+
+CSRF_COOKIE_NAME = 'cs-csrfkey'
+CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
+
+if DEBUG:
+    # CORS_ALLOW_HEADERS ='*'
+    CORS_ALLOW_ALL_ORIGINS = True
+
+else:
+    CORS_ORIGIN_WHITELIST = [
+        *os.environ.get('CORS_ORIGIN_WHITELIST').split(',')
+    ]
+    # CORS_ALLOW_HEADERS = [
+    #     'content-type',
+    #     'authorization',
+    #     'x-csrftoken',
+    #     'celesup-api',
+    # ]
+
 CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOW_HEADERS = [
     'content-type',
     'authorization',
     'x-csrftoken',
     'celesup-api',
 ]
-
-
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:5000",
-]
-
 
 
 REST_FRAMEWORK = {
@@ -36,21 +59,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
-
-# SESSION_COOKIE_AGE = 1209600 # 2 weeks in seconds
-# CSRF_COOKIE_AGE = 1209600 # 2 weeks in seconds
-
-
-expiration_date = datetime.now() + timedelta(days=1)
-expiration_time = expiration_date - datetime.now()
-
-
-CSRF_COOKIE_NAME = 'cs-csrfkey'
-SESSION_COOKIE_NAME = 'cs-sessionkey'
-CSRF_COOKIE_AGE = int(expiration_time.total_seconds())
-SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
-
 SIMPLE_JWT = {
     # "ACCESS_TOKEN_LIFETIME": timedelta(seconds=10),
     # "REFRESH_TOKEN_LIFETIME": timedelta(seconds=30),
@@ -65,14 +73,4 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "token_id",
     "SIGNING_KEY": os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY")),
-}
-
-
-DJOSER = {
-    "USER_ID_FIELD": "username",
-    "LOGIN_FIELD": "email",
-    "PASSWORD_RESET_CONFIRM_URL": "password-reset/?uid={uid}&tkn={token}",
-    "PASSWORD_RESET_CONFIRM_RETYPE": True,
-    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
-    "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": True,
 }
