@@ -26,7 +26,7 @@ class VerifyEmailAddress(APIView):
 
         if is_authenticated:
 
-            user = self.temporal_db.get(cookie_id=cookie)
+            user = self.temporal_db.retrieve(cookie_id=cookie)
             if not user["mailed"]:
                 recipient = user["email"]
                 content = render_to_string(
@@ -50,7 +50,7 @@ class VerifyEmailAddress(APIView):
             return self.missing_cookie_response()
 
         self.cookie = COOKIE
-        user = self.temporal_db.get(cookie_id=COOKIE)
+        user = self.temporal_db.retrieve(cookie_id=COOKIE)
 
         if "logout-cookie" in request.data and user:
             return self.logout_cookie()

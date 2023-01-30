@@ -1,121 +1,111 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
+
+from photo.models import Photo
 
 from utilities.media_paths import avatar_path, cover_img_path
 
 
 class User(AbstractUser):
     "Base the user class"
-    id = models.CharField(max_length=100, primary_key=True, blank=True)
-    avatar = models.ImageField(upload_to=avatar_path, default="default/avatar.png")
-    email = models.EmailField(
-        max_length=160,
-        null=False,
-        unique=True,
-        blank=True,
-        verbose_name="primary_email",
-    )
-    email_2 = models.EmailField(
-        max_length=160,
+
+    GENDER = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    ]
+
+    ACCOUNT_TYPES = [
+        ("celesup", "Celesup"),
+        ("support", "Supporter"),
+        ("administrator", "Administrator"),
+    ]
+
+    id = models.CharField(max_length=100, primary_key=True, blank=True, unique=True)
+
+    avatar = models.ImageField(
+        upload_to=avatar_path,
+        default="default/avatar.png",
         null=True,
-        unique=True,
         blank=True,
     )
-    email_3 = models.EmailField(
-        max_length=160,
+
+    cover_img = models.FileField(
+        upload_to=cover_img_path,
+        default="default/cover.png",
         null=True,
-        unique=True,
         blank=True,
     )
-    username = models.CharField(max_length=50, null=False, blank=False, unique=True)
-    first_name = models.CharField(max_length=100, null=True, blank=True)
-    last_name = models.CharField(max_length=100, null=True, blank=True)
-    gender = models.CharField(
-        max_length=20, null=True, blank=True, default="Unspecified"
-    )
-    city = models.CharField(
-        max_length=100, null=True, blank=True, default="Unspecified"
-    )
+
+    email = models.EmailField(max_length=160, unique=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    username = models.CharField(max_length=100, unique=True, null=False, blank=False)
+
+    city = models.CharField(null=True, blank=True, max_length=150)
     biography = models.CharField(max_length=350, null=True, blank=True)
-    cover_img = models.ImageField(upload_to=cover_img_path, default="default/cover.jpg")
-    user_type = models.CharField(max_length=20, blank=True, default="Admin")
+    gender = models.CharField(max_length=20, null=True, blank=True, choices=GENDER)
 
-    friends = models.ManyToManyField("User", blank=True, related_name="user_friends")
-    followers = models.ManyToManyField(
-        "User", blank=True, related_name="user_followers"
-    )
-    following = models.ManyToManyField(
-        "User", blank=True, related_name="user_following"
-    )
+    account_type = models.CharField(max_length=20, blank=True, choices=ACCOUNT_TYPES)
 
-    public_email = models.EmailField(max_length=160, null=True, blank=True)
-    notification_email = models.EmailField(max_length=160, null=True, blank=True)
     email_privacy = models.BooleanField(default=True, blank=True)
+    public_email = models.CharField(max_length=160, null=True, blank=True)
+    notification_email = models.CharField(max_length=20, blank=True, null=True)
+    secondary_email = models.EmailField(
+        max_length=160, unique=True, blank=True, null=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    rating = models.BigIntegerField(default=0)
-
-    verified = models.BooleanField(default=False)
+    account_rating = models.BigIntegerField(default=0)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
-
-    @property
-    def profile(self):
-        from admin_users.models import Admin
-        from celebrity.models import Celebrity
-        from supporter.models import Supporter
-
-        user_type = self.user_type.lower()
-        match user_type:
-            case "celebrity":
-                return Celebrity.objects.get(user=self)
-            case "supporter":
-                return Supporter.objects.get(user=self)
-            case "admin":
-                return Admin.objects.get(user=self)
-            case _:
-                return None
+    REQUIRED_FIELDS = ["username", "account_type"]
 
     def get_profile(self):
         return self.profile
 
     @property
+    def profile(self):
+        from administrator.models import Administrator
+        from celebrity.models import Celebrity
+        from supporter.models import Supporter
+
+        user_type = self.account_type.lower()
+        match user_type:
+            case "celebrity":
+                return Celebrity.objects.get(user=self)
+            case "supporter":
+                return Supporter.objects.get(user=self)
+            case "administrator":
+                return Administrator.objects.get(user=self)
+            case _:
+                return None
+
+    @property
     def full_name(self):
-        return self.first_name.capitalize() + " " + self.last_name.capitalize()
+        return self.name.capitalize() + " " + self.last_name.capitalize()
 
     @property
     def emails(self):
         em = []
-        for email in [self.email, self.email_2, self.email_3]:
-            if email:
-                em.append({"is_primary": email == self.email, "email": email})
+        for email in [self.email, self.secondary_email]:
+            if email.text:
+                em.append(
+                    {"is_primary": email.text == self.email.text, "email": email.text}
+                )
         return em
-
-    @property
-    def posts_count(self):
-        return self.post_set.all().count()
-
-    @property
-    def shares_count(self):
-        return self.friends.all().count()
-
-    @property
-    def bookmark_count(self):
-        return self.friends.all().count()
-
-    @property
-    def followers_count(self):
-        return self.friends.all().count()
-
-    @property
-    def followers_count(self):
-        return self.friends.all().count()
 
     def __str__(self):
         return self.username[:25]
 
     def __repr__(self):
         return self.email
+
+
+# class Email(models.Model):
+#     text = models.EmailField(max_length=160, unique=True)
+#     verified = models.BooleanField(default=False)
+
+#     def __str__(self) -> str:
+#         return self.text

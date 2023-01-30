@@ -20,16 +20,14 @@ class SendMail(threading.Thread):
     def send_email_verification_code(self, content, recipient):
         """sends verifications email to the recipient list\n* This can take some minutes"""
         mail = EmailMessage(
-            subject="[Celesup] Confirm E-mail Address",
+            subject="[Celesup] Confirm Email Address",
             body=content,
             from_email=settings.EMAIL_HOST_USER,
             to=[recipient],
         )
-        mail.fail_silently = False
         sended = False
-
         try:
-            sended = mail.send()
+            sended = mail.send(fail_silently=False)
         except Exception as e:
             print(e)
 

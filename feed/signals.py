@@ -7,36 +7,35 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 
-@receiver(pre_save, sender=Feed)
-def assign_feed_id(sender, instance, *args, **kwargs):
-    if not instance.id:
-        feed_id = id_generator("Feed User")
-        instance.id = feed_id
-
-
-# @receiver(pre_save, sender=FeedObjects)
-# def assign_feed_id(sender, instance, *args, **kwargs):
-#     if not instance.id:
-#         feed_id = id_generator("Feed Item")
-#         instance.id = feed_id
-
-
 @receiver(post_save, sender=User)
-def new_feed(sender, created, instance, *args, **kwargs):
+def create_feed_user(sender, created, instance, *args, **kwargs):
     if created:
-        feed_id = id_generator("Feed User")
-        Feed.objects.create(id=feed_id, user=instance)
+        feed = Feed(user=instance)
+        feed.save()
 
 
-@receiver(post_save, sender=Post)
-def add_to_user_feeds(sender, created, instance, *args, **kwargs):
-    if created:
-        profile = instance.author
+@receiver(pre_save, sender=Feed)
+def assign_feed_id(sender, instance: Feed, *args, **kwargs):
 
-        author_feed, _ = Feed.objects.get_or_create(user=profile)
+    id_used = False
+    id, save_id = id_generator()
+    if not instance.id:
+        instance.id = id
+        id_used = True
 
-        author_feed.posts.add(instance)
+    if id_used:
+        save_id("Feed for @" + instance.user.email)
 
-        for user in profile.followers.all():
-            user_feed, created = Feed.objects.get_or_create(user=user)
-            user_feed.posts.add(instance)
+
+# @receiver(post_save, sender=Post)
+# def add_to_user_feeds(sender, created, instance, *args, **kwargs):
+#     if created:
+#         profile = instance.author
+
+#         author_feed, _ = Feed.objects.get_or_create(user=profile)
+
+#         author_feed.posts.add(instance)
+
+#         for user in profile.followers.all():
+#             user_feed, created = Feed.objects.get_or_create(user=user)
+#             user_feed.posts.add(instance)

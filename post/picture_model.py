@@ -8,6 +8,7 @@ from django.db import models
 from utilities.resize_image import responsive_resize
 from .utils import validate_file
 
+
 def post_photo_path(instance, filename):
     return f"posts/by__{instance.author.email}/photos/{filename}"
 
@@ -19,7 +20,7 @@ class Photo(models.Model):
         default="default/photo.png",
         null=True,
         blank=True,
-        validators=[validate_file],
+        # validators=[validate_file],
     )
 
     alt_text = models.CharField(max_length=50, default="post by")
@@ -27,18 +28,20 @@ class Photo(models.Model):
     def __str__(self) -> str:
         return self.image.url
 
+    @property
     def get_size(self):
-        " Returns a tuple with the width and height "
+        "Returns a tuple with the width and height"
         image = Image.open(self.image.path)
         return image.size
 
+    @property
+    def width(self):
+        return self.get_size[0]
+
+    @property
+    def height(self):
+        return self.get_size[1]
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         responsive_resize(self.image.path)
-
-
-
-
-
-

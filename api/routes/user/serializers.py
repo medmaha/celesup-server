@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import User
-from admin_users.models import Admin
+from administrator.models import Administrator
 
 from supporter.models import Supporter
 from celebrity.models import Celebrity
@@ -15,7 +15,7 @@ class UserMETADATASeriaLizer(serializers.ModelSerializer):
 class UserMiniInfoSeriaLizer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "avatar", "full_name", "username", "public_email", "user_type"]
+        fields = ["id", "avatar", "name", "username", "public_email", "account_type"]
 
 
 class UserEditSerializer(serializers.ModelSerializer):
@@ -47,7 +47,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "avatar",
             "gender",
             "username",
-            "full_name",
             "cover_img",
             "biography",
             # ? activities
@@ -58,13 +57,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
             # "friends_count",
             # "followers_count",
             # "following_count",
-            "followers",
-            "following",
-            "user_type",
             # ? emails
             "email",
-            "email_2",
-            "email_3",
             "public_email",
             "email_privacy",
             "notification_email",
@@ -80,12 +74,10 @@ class UserCreationSerializer(serializers.ModelSerializer):
             "avatar",
             "email",
             "username",
-            "first_name",
-            "last_name",
             "gender",
             "city",
             "biography",
-            "user_type",
+            "account_type",
         ]
 
 
@@ -103,5 +95,5 @@ class SupporterSerializer(serializers.ModelSerializer):
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Admin
+        model = Administrator
         fields = ["profile_type"]

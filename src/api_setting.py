@@ -3,54 +3,68 @@ from datetime import timedelta, datetime
 
 import os
 
-DEBUG = bool(int(os.environ.get('DEBUG')))
- 
+DEBUG = bool(int(os.environ.get("DEBUG")))
 
-expiration_days = datetime.now() + timedelta(days=1)
+expiration_days = datetime.now() + timedelta(days=7)
 expiration_time = expiration_days - datetime.now()
 
 
-SESSION_COOKIE_NAME = 'cs-sessionkey'
-SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
-SESSION_COOKIE_SECURE = bool(int(os.environ.get('SESSION_COOKIE_SECURE')))
-SESSION_COOKIE_SAMESITE = os.environ.get('SESSION_COOKIE_SAMESITE')
+USER_REGISTRATION_COOKIE_AGE = datetime.now() + timedelta(minutes=3)
+UNVERIFIED_USER_COOKIE_AGE = datetime.now() + timedelta(minutes=15)
 
-CSRF_COOKIE_NAME = 'cs-csrfkey'
+
+SESSION_COOKIE_NAME = "cs-sessionkey"
+SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
+SESSION_COOKIE_SECURE = bool(int(os.environ.get("SESSION_COOKIE_SECURE")))
+SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE")
+
+CSRF_COOKIE_NAME = "cs-csrfkey"
 CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
 
-if DEBUG:
-    # CORS_ALLOW_HEADERS ='*'
-    CORS_ALLOW_ALL_ORIGINS = True
+# if DEBUG:
+#     # CORS_ALLOW_HEADERS ='*'
+#     CORS_ALLOW_ALL_ORIGINS = True
 
-else:
-    CORS_ORIGIN_WHITELIST = [
-        *os.environ.get('CORS_ORIGIN_WHITELIST').split(',')
-    ]
-    # CORS_ALLOW_HEADERS = [
-    #     'content-type',
-    #     'authorization',
-    #     'x-csrftoken',
-    #     'celesup-api',
-    # ]
+# else:
+#     CORS_ORIGIN_WHITELIST = [*os.environ.get("CORS_ORIGIN_WHITELIST").split(",")]
+#     # CORS_ALLOW_HEADERS = [
+#     #     'content-type',
+#     #     'authorization',
+#     #     'x-csrftoken',
+#     #     'celesup-api',
+#     # ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'authorization',
-    'x-csrftoken',
-    'celesup-api',
-]
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_METHODS = (
+    "GET",
+    "PUT",
+    "POST",
+    "DELETE",
+    "OPTIONS",
+)
+CORS_ALLOW_HEADERS = (
+    "celesup-api",
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
 
 
 REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
-    "DEFAULT_PAGINATION_CLASS": "api.features.paginator.CelesupPaginator",
+    "DEFAULT_PAGINATION_CLASS": "src.features.paginator.CelesupPaginator",
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        'api.features.authenticator.CelesupAuthentication',
+        "src.features.authenticator.CelesupAuthentication",
     ),
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",

@@ -2,29 +2,31 @@ import uuid
 from features.models import UniqueId
 
 
-def id_generator(used_for=str):
-    """Generate a unique uuid for each model object
+def id_generator():
+    def clean_id(id: str):
+        id = id.replace("-", "")
+        id = id.replace("_", "")
+        return id + "_cs_u"
 
-    Args:
-        used_for (string, optional): _description_. Defaults to str.
+    def save(x: str, id: str):
+        id = UniqueId.objects.create(used_for=x, unique_id=id)
+        return id
 
-    Returns:
-        _type_: _description_
-    """
-
-    a = uuid.uuid4()
-    new_uuid = str(a)
-    existing_ids = UniqueId.objects.all()
+    _uuid = uuid.uuid4()
+    new_id = str(_uuid)
 
     while True:
-        if str(new_uuid) in existing_ids:
-            a = uuid.uuid4()
-            new_uuid = str(a)
+        id = clean_id(new_id)
+        check_existence = UniqueId.objects.filter(unique_id=id).exists()
+        if check_existence == True:
+            _uuid = uuid.uuid4()
+            new_id = clean_id(str(_uuid))
         else:
             break
-    new_uuid = new_uuid.replace("-", "")
-    UniqueId.objects.create(used_for=used_for, unique_id=new_uuid)
-    return new_uuid
+
+    id = clean_id(new_id)
+
+    return (id, lambda x: save(x, id))
 
 
 def get_profile_data(user):

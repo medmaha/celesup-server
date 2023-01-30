@@ -30,9 +30,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     # customs apps
-    # "fake_objects.apps.FakeObjectsConfig",
+    "fake_objects.apps.FakeObjectsConfig",
+    "api.apps.ApiConfig",
     "users.apps.UsersConfig",
-    "admin_users.apps.AdminUserConfig",
+    "photo.apps.PhotoConfig",
+    "administrator.apps.AdministratorConfig",
     "celebrity.apps.CelebrityConfig",
     "supporter.apps.SupporterConfig",
     "feed.apps.FeedConfig",
@@ -65,8 +67,9 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            BASE_DIR / "api/templates",
-            BASE_DIR / "build",
+            # BASE_DIR / "api/templates",
+            BASE_DIR
+            / "build",
         ],
         "APP_DIRS": True,
         "OPTIONS": {

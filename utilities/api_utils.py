@@ -3,7 +3,7 @@ from rest_framework import status
 
 from comment.models import Comment
 
-from api.routes.dashboard.posts.serializers import PostDetailSerializer
+from api.routes.posts.serializers import PostDetailSerializer
 from api.routes.user.serializers import UserMiniInfoSeriaLizer
 
 from utilities.generators import get_profile_data

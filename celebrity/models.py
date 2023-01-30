@@ -2,7 +2,6 @@
 
 from django.db import models
 from users.models import User
-from post.models import Post
 
 # class FanClub(models.Model):
 #     """
@@ -22,7 +21,7 @@ class Celebrity(models.Model):
     Celebrity user account class
     """
 
-    id = models.CharField(max_length=100, unique=True, primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True, blank=True)
     user = models.OneToOneField(User, models.CASCADE, related_name="celebrity_user")
     friends = models.ManyToManyField(User, blank=True, related_name="celebrity_friends")
     profile_type = models.CharField(max_length=50, default="Celebrity", editable=False)

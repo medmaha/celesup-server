@@ -5,7 +5,7 @@ from django.db.models import Q
 from users.models import User
 from post.models import Post
 from api.routes.user.serializers import UserDetailSerializer
-from api.routes.dashboard.posts.serializers import PostDetailSerializer
+from api.routes.posts.serializers import PostDetailSerializer
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
