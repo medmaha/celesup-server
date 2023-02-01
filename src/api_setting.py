@@ -16,48 +16,30 @@ UNVERIFIED_USER_COOKIE_AGE = datetime.now() + timedelta(minutes=15)
 # SESSION_COOKIE_NAME = "cs-sessionkey"
 SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
 SESSION_COOKIE_SECURE = bool(int(os.environ.get("SESSION_COOKIE_SECURE")))
-SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE")
+SESSION_COOKIE_SAMESITE = "None" if SESSION_COOKIE_SECURE else "Lax"
 
 # CSRF_COOKIE_NAME = "cs-csrfkey"
 CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
 
-# if DEBUG:
-#     # CORS_ALLOW_HEADERS ='*'
-#     CORS_ALLOW_ALL_ORIGINS = True
-
-# else:
-#     CORS_ORIGIN_WHITELIST = [*os.environ.get("CORS_ORIGIN_WHITELIST").split(",")]
-#     # CORS_ALLOW_HEADERS = [
-#     #     'content-type',
-#     #     'authorization',
-#     #     'x-csrftoken',
-#     #     'celesup-api',
-#     # ]
-
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = [
-    "https://cs-client.vercer.app",
-    "http://localhost:5000",
-]
 
+if DEBUG:
+    CORS_ALLOW_HEADERS = "*"
+    CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_EXPOSE_HEADERS = ["CONTENT_TYPE", "X-CSRFToken"]
-
-CORS_ALLOW_HEADERS = (
-    "celesup-api",
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-)
+else:
+    allowed_host = lambda: [
+        h.strip() for h in os.environ.get("CORS_ORIGIN_WHITELIST").split(",")
+    ]
+    CORS_ORIGIN_WHITELIST = allowed_host()
+    CORS_ALLOW_HEADERS = [
+        "content-type",
+        "authorization",
+        "x-csrftoken",
+        "celesup-api",
+    ]
 
 
 REST_FRAMEWORK = {

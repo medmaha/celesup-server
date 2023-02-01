@@ -11,7 +11,8 @@ SECRET_KEY = os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY"))
 DEBUG = bool(int(os.getenv("DEBUG")))
 
 if not DEBUG:
-    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+    host = lambda: [h.strip() for h in os.getenv("ALLOWED_HOSTS").split(",")]
+    ALLOWED_HOSTS = host()
 else:
     ALLOWED_HOSTS = ["*"]
 

@@ -44,11 +44,11 @@ class AuthenticateUser(TokenObtainPairView):
             serializer = self.get_serializer(user)
             response = Response(serializer.data, status=status.HTTP_200_OK)
             response.set_cookie(
-                "cs-csrfKey",
+                "cs-csrfkey",
                 value=str(uuid.uuid4()).replace("-", ""),
-                max_age=settings["SESSION_COOKIE_AGE"],
-                secure=settings["SESSION_COOKIE_SECURE"],
-                samesite=settings["SESSION_COOKIE_SAMESITE"],
+                max_age=settings.SESSION_COOKIE_AGE,
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite=settings.SESSION_COOKIE_SAMESITE,
             )
             return response
 

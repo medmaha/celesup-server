@@ -12,7 +12,9 @@ from api.routes.user.serializers import UserMiniInfoSeriaLizer
 class AuthenticateUser(GenericAPIView):
 
     serializer_class = UserMiniInfoSeriaLizer
+
     def get(self, request, *args, **kwargs):
+        print(request)
         user = request.user
 
         if not isinstance(user, User):
@@ -20,5 +22,3 @@ class AuthenticateUser(GenericAPIView):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=200)
-
-  

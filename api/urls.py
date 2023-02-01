@@ -13,9 +13,11 @@ from .routes.comment.urls import comment_url_patterns
 from .routes.messenging.urls import messenging_url_patterns
 
 
+from .routes.csrf import csrf
 from .routes.test_api import test_api
 
 urlpatterns = [
+    path("csrf", csrf),
     path("test", test_api),
 ]
 
