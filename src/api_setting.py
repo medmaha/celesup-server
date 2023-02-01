@@ -14,7 +14,7 @@ UNVERIFIED_USER_COOKIE_AGE = datetime.now() + timedelta(minutes=15)
 # SESSION_COOKIE_NAME = "cs-sessionkey"
 SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
 SESSION_COOKIE_SECURE = bool(int(os.environ.get("SESSION_COOKIE_SECURE")))
-SESSION_COOKIE_SAMESITE = "None" if SESSION_COOKIE_SECURE else "Lax"
+SESSION_COOKIE_SAMESITE = "" if SESSION_COOKIE_SECURE else "Lax"
 
 # CSRF_COOKIE_NAME = "cs-csrfkey"
 CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
@@ -32,7 +32,6 @@ else:
         h.strip() for h in os.environ.get("CORS_ORIGIN_WHITELIST").split(",")
     ]
     CORS_ORIGIN_WHITELIST = allowed_host()
-    print(CORS_ORIGIN_WHITELIST)
     CORS_ALLOW_HEADERS = [
         "content-type",
         "authorization",
