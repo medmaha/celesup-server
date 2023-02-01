@@ -1,8 +1,6 @@
 import os
 from datetime import timedelta, datetime
 
-import os
-
 DEBUG = bool(int(os.environ.get("DEBUG")))
 
 expiration_days = datetime.now() + timedelta(days=7)
@@ -34,11 +32,13 @@ else:
         h.strip() for h in os.environ.get("CORS_ORIGIN_WHITELIST").split(",")
     ]
     CORS_ORIGIN_WHITELIST = allowed_host()
+    print(CORS_ORIGIN_WHITELIST)
     CORS_ALLOW_HEADERS = [
         "content-type",
         "authorization",
         "x-csrftoken",
         "celesup-api",
+        "origin",
     ]
 
 
