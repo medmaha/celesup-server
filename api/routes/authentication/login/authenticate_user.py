@@ -1,6 +1,7 @@
-from cmath import log
 from datetime import datetime, timedelta
-from django.contrib.auth import authenticate, login
+import uuid
+from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +9,8 @@ from rest_framework import status
 from api.routes.authentication.utils import Database
 
 from users.serializers import UserViewSerializer
+
+from api.library.cookies import CSCookie
 
 
 class AuthenticateUser(TokenObtainPairView):
@@ -23,6 +26,10 @@ class AuthenticateUser(TokenObtainPairView):
 
         data = request.data.copy()
 
+        if request.user.is_authenticated:
+            logout(request)
+            return Response(status=200)
+
         email = data.get("email") or data.get("username") or data.get("phone")
         password = data.get("password")
 
@@ -36,6 +43,13 @@ class AuthenticateUser(TokenObtainPairView):
             self.serializer_class = UserViewSerializer
             serializer = self.get_serializer(user)
             response = Response(serializer.data, status=status.HTTP_200_OK)
+            response.set_cookie(
+                "cs-csrfKey",
+                value=str(uuid.uuid4()).replace("-", ""),
+                max_age=settings["SESSION_COOKIE_AGE"],
+                secure=settings["SESSION_COOKIE_SECURE"],
+                samesite=settings["SESSION_COOKIE_SAMESITE"],
+            )
             return response
 
         _user = self.validation_database.authenticate(email, password)
@@ -52,16 +66,20 @@ class AuthenticateUser(TokenObtainPairView):
 
             cookie_id = _user["cookie_id"]
 
-            # Todo secure the cookies on production
+            cookies = CSCookie(response=response)
             expires_at = datetime.now() + timedelta(minutes=15)
-            response.set_cookie("cs-auth", cookie_id, expires=expires_at, httponly=True)
-            response.set_cookie("cs-auth-val", cookie_id, expires=expires_at)
+
+            cookies.set("cs-auth", cookie_id, expires=expires_at, httponly=True)
+            cookies.set("cs-auth-val", cookie_id, expires=expires_at)
+
             return response
 
         response = Response(
             {"message": "Credentials do not match!"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-        response.delete_cookie("cs-auth")
-        response.delete_cookie("cs-auth-val")
+        cookies = CSCookie(response=response)
+        cookies.delete("cs-auth")
+        cookies.delete("cs-auth-val")
+
         return response

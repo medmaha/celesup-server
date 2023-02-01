@@ -4,12 +4,18 @@ from feed.models import Feed
 from post.models import Post
 
 from post.serializer import PostViewSerializer
+from django.contrib.sites.shortcuts import get_current_site
 
 
 class FeedPost(generics.ListAPIView):
     """Gets all post related to the authenticated user"""
 
     serializer_class = PostViewSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
 
     def get_queryset(self):
 

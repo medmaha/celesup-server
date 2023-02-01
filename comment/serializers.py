@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
-from api.routes.user.serializers import UserMiniInfoSeriaLizer
 
 from .models import Comment
 from users.serializers import UserViewSerializer

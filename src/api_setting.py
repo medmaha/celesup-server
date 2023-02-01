@@ -13,12 +13,12 @@ USER_REGISTRATION_COOKIE_AGE = datetime.now() + timedelta(minutes=3)
 UNVERIFIED_USER_COOKIE_AGE = datetime.now() + timedelta(minutes=15)
 
 
-SESSION_COOKIE_NAME = "cs-sessionkey"
+# SESSION_COOKIE_NAME = "cs-sessionkey"
 SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
 SESSION_COOKIE_SECURE = bool(int(os.environ.get("SESSION_COOKIE_SECURE")))
 SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE")
 
-CSRF_COOKIE_NAME = "cs-csrfkey"
+# CSRF_COOKIE_NAME = "cs-csrfkey"
 CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
@@ -37,14 +37,15 @@ CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
 #     # ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_METHODS = (
-    "GET",
-    "PUT",
-    "POST",
-    "DELETE",
-    "OPTIONS",
-)
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = [
+    "https://cs-client.vercer.app",
+    "http://localhost:5000",
+]
+
+
+CORS_EXPOSE_HEADERS = ["CONTENT_TYPE", "X-CSRFToken"]
+
 CORS_ALLOW_HEADERS = (
     "celesup-api",
     "accept",

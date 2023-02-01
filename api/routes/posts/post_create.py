@@ -42,12 +42,13 @@ class PostCreate(CreateAPIView):
 
         if picture:
             photo = Photo.objects.create(
-                author=post.author,
+                author_id=post.author.id,
                 file=picture,
                 alt_text="photo " + post.author.username,
+                used_for="post",
             )
             post.picture = photo
-            post.save()
+        post.save()
 
         return post
 
