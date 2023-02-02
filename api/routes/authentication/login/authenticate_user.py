@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+import os
 import uuid
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework import status
+
+from ..utils.tokens import GenerateToken
 
 from api.routes.authentication.utils import Database
 
@@ -13,13 +16,16 @@ from users.serializers import UserViewSerializer
 from api.library.cookies import CSCookie
 
 
+AUTH_TYPE = os.environ.get("AUTHENTICATION_MECHANISM")
+
+
 class AuthenticateUser(TokenObtainPairView):
     """A view for getting access token and refreshing tokens"""
 
     authentication_classes = []
     permission_classes = []
 
-    # jwt_token_generator = GenerateToken
+    jwt_token_generator = GenerateToken()
     validation_database = Database()
 
     def post(self, request, *args, **kwargs):
@@ -38,18 +44,27 @@ class AuthenticateUser(TokenObtainPairView):
         if user:
             # tokens = self.jwt_token_generator.tokens(user,  self.get_serializer)
 
-            login(request, user)
-
             self.serializer_class = UserViewSerializer
-            serializer = self.get_serializer(user)
-            response = Response(serializer.data, status=status.HTTP_200_OK)
-            response.set_cookie(
-                "cs-csrfkey",
-                value=str(uuid.uuid4()).replace("-", ""),
-                max_age=settings.SESSION_COOKIE_AGE,
-                secure=settings.SESSION_COOKIE_SECURE,
-                samesite=settings.SESSION_COOKIE_SAMESITE,
-            )
+            match AUTH_TYPE:
+                case "JWT":
+                    tokens = self.jwt_token_generator.tokens(
+                        user, self.get_serializer, context={"request": request}
+                    )
+                    response = Response({"tokens": tokens}, status=status.HTTP_200_OK)
+
+                case "SESSION":
+
+                    login(request, user)
+                    serializer = self.get_serializer(user)
+                    response = Response(serializer.data, status=status.HTTP_200_OK)
+                    response.set_cookie(
+                        "cs-auth_id",
+                        value=str(uuid.uuid4()).replace("-", ""),
+                        max_age=settings.SESSION_COOKIE_AGE,
+                        secure=settings.SESSION_COOKIE_SECURE,
+                        samesite=settings.SESSION_COOKIE_SAMESITE,
+                    )
+
             return response
 
         _user = self.validation_database.authenticate(email, password)
