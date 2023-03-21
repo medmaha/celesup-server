@@ -61,6 +61,8 @@ class Post(models.Model):
     activity_rate = models.BigIntegerField(default=1, null=True, blank=True)
     objects = ObjectManager()
 
+    child = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)
+
     # @property
     # def key(self):
     #     return self.id

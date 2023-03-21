@@ -4,7 +4,7 @@ from rest_framework.generics import GenericAPIView
 
 from post.models import Post
 from post.serializer import PostViewSerializer
-
+ 
 
 class LikePost(GenericAPIView):
 
@@ -17,15 +17,19 @@ class LikePost(GenericAPIView):
 
         if request.user in post.likes.all():
             post.likes.remove(request.user)
-            post.activity_rate -= 1
+            if post.activity_rate:
+                post.activity_rate -= 1
             post.author.account_rating -= 1
         else:
             post.likes.add(request.user)
-            post.activity_rate += 1
+            if post.activity_rate:
+                post.activity_rate += 1
             post.author.account_rating += 1
 
         post.save()
-        serializer = self.get_serializer(post)
+        post = Post.objects.get(key=post.key)
+        serializer = self.get_serializer(post, context={'request':request})
+
 
         return Response(
             serializer.data,

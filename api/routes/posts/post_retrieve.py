@@ -1,20 +1,16 @@
 from django.shortcuts import get_object_or_404
 
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
-from rest_framework import status
 
 from post.models import Post
-from comment.models import Comment
-
-from .serializers import PostDetailSerializer
-
-from ..user.serializers import UserMiniInfoSeriaLizer, UserDetailSerializer
-
-from utilities.api_utils import get_post_json
+from post.serializer import PostViewSerializer
 
 
 class PostRetrieve(RetrieveAPIView):
+    serializer_class = PostViewSerializer
+
     def retrieve(self, request, *args, **kwargs):
 
         try:
@@ -23,9 +19,8 @@ class PostRetrieve(RetrieveAPIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        data = get_post_json(post, self)
+        post_serializer = self.get_serializer(post, context={"request": request})
 
-        return Response(
-            data,
-            status=200,
-        )
+        data = post_serializer.data
+
+        return Response(data, status=status.HTTP_200_OK)

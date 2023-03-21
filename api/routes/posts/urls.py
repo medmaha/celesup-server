@@ -9,6 +9,7 @@ from . import (
     LikePost,
     PostStatistics,
     ExplorePosts,
+    PostRepost,
 )
 
 posts_url_patterns = [
@@ -16,6 +17,7 @@ posts_url_patterns = [
     path("explore", ExplorePosts.as_view()),
     path("posts", PostsList.as_view()),
     path("posts/create", PostCreate.as_view()),
+    path("posts/repost", PostRepost.as_view()),
     path("posts/delete", PostDelete.as_view()),
     path("posts/update", PostUpdate.as_view()),
     path("posts/retrieve", PostRetrieve.as_view()),

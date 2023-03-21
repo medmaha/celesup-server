@@ -9,8 +9,8 @@ def id_generator():
         return id + "_cs_u"
 
     def save(x: str, id: str):
-        id = UniqueId.objects.create(used_for=x, unique_id=id)
-        return id
+        uid = UniqueId.objects.create(used_for=x, unique_id=id)
+        return uid
 
     _uuid = uuid.uuid4()
     new_id = str(_uuid)
@@ -26,7 +26,7 @@ def id_generator():
 
     id = clean_id(new_id)
 
-    return (id, lambda x: save(x, id))
+    return (id, lambda usedFor: save(usedFor, id))
 
 
 def get_profile_data(user):

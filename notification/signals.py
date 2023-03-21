@@ -65,6 +65,8 @@ class Utils:
             if not self.hint_img(comment):
                 return self.get_comment_field(comment)
 
+        return ""
+
     def hint_img(self, comment: Comment):
         if isinstance(self.get_data(comment)["issued_on"], Post):
             if not isinstance(self.get_post_field(comment.post), str):
@@ -72,7 +74,11 @@ class Utils:
 
         if isinstance(self.get_data(comment)["issued_on"], Comment):
             if not isinstance(self.get_comment_field(comment), str):
-                return self.resize_hint_img(self.get_comment_field(comment))
+                comment_field = self.get_comment_field(comment)
+                if not isinstance(comment_field, str):
+                    pass
+                    return self.resize_hint_img(comment_field)
+                return comment_field
 
     def get_data(self, comment: Comment):
         data = {
@@ -81,41 +87,46 @@ class Utils:
         }
 
         if comment.post:
-            data["issued_on"]: Post = comment.post
+            data["issued_on"] = comment.post
 
         if comment.parent:
-            data["issued_on"]: Comment = comment
-            data["type"]: str = "child"
+            data["issued_on"] = comment
+            data["type"] = "child"
 
         return data
 
-    def get_post_field(self, post: Post):
-        if post.caption:
-            return post.caption[:20]
-        elif post.excerpt:
-            return post.excerpt[:20]
-        elif post.hashtags:
-            return post.hashtags[:20]
-        elif post.picture:
-            return post.picture
-        elif post.video:
-            return post.video
+    def get_post_field(self, post: Post | None):
+        if post:
+            if post.caption:
+                return post.caption[:20]
+            elif post.excerpt:
+                return post.excerpt[:20]
+            elif post.hashtags:
+                return post.hashtags[:20]
+            elif post.picture:
+                return post.picture.url
+        # elif post.video:
+        #     return post.video
 
-    def get_comment_field(self, comment: Comment):
-        if comment.parent and comment.parent.content:
-            return comment.parent.content[:20]
-        elif comment.file:
-            return comment.file
-        elif comment.picture:
-            return comment.picture
+    def get_comment_field(self, comment: Comment | None):
+        if comment:
+            if comment.parent and comment.parent.content:
+                return comment.parent.content[:20]
+            elif comment.file:
+                return comment.file.url
+            elif comment.picture:
+                return comment.picture.url
 
-    def resize_hint_img(self, post: Post):
-        if post.video and post.picture:
-            return post.video.file.url
-        elif post.picture:
-            return post.picture.image.url
-        else:
-            return ""
+    def resize_hint_img(self, post: Post | None):
+        if post and post.picture:
+            # if post.video and post.picture:
+            #     return post.video.file.url
+            return post.picture.url
+        # elif post.picture:
+        #     return post.picture.serialized_data
+        # else:
+        #     return ""
+        return ""
 
         path, ext = "", ""
         path_list = post.picture.path.split(".")

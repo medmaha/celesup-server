@@ -30,8 +30,17 @@ CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+    "celesup-api",
+    "origin",
+    'cs-auth',
+    'cs-auth-val',
+]
+
 if DEBUG:
-    CORS_ALLOW_HEADERS = "*"
     CORS_ALLOW_ALL_ORIGINS = True
 
 else:
@@ -39,13 +48,6 @@ else:
         h.strip() for h in os.environ.get("CORS_ORIGIN_WHITELIST").split(",")
     ]
     CORS_ORIGIN_WHITELIST = allowed_host()
-    CORS_ALLOW_HEADERS = [
-        "content-type",
-        "authorization",
-        "x-csrftoken",
-        "celesup-api",
-        "origin",
-    ]
 
 
 REST_FRAMEWORK = {

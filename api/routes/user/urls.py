@@ -5,13 +5,15 @@ from .account import AccountSettings
 
 
 from .user_info import UserInformation
+from .user_exists import UserExists
 
-_users_url_patterns = [
-    path('user/<str:id>', UserInformation.as_view())
+users_url_patterns = [
+    path("user/<str:id>", UserInformation.as_view()),
+    path("users/exists", UserExists.as_view()),
 ]
 
 
-users_url_patterns = [
+users_url_patterns += [
     path("authenticate", AuthenticateUser.as_view()),
     path("profile/all", ProfileList.as_view()),
     path("profile/view", ProfileView.as_view()),

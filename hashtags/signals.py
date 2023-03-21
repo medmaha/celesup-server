@@ -11,8 +11,10 @@ from utilities.generators import id_generator
 
 @receiver(pre_save, sender=HashTag)
 def assign_user_id(sender, instance, *args, **kwargs):
-    id = id_generator("User")
+    id, callback = id_generator()
+
     instance.id = id
+    callback("Hashtag")
 
 
 @receiver(post_save, sender=Post)

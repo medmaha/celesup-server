@@ -1,10 +1,5 @@
-from PIL import Image
-
+import os
 from django.db import models
-
-
-def post_photo_path(instance, filename):
-    return f"{instance.used_for}/by__{instance.author_id}/photos/{filename}"
 
 
 class Photo(models.Model):
@@ -13,45 +8,36 @@ class Photo(models.Model):
         ("avatar", "Avatar"),
         ("thumbnail", "Thumbnail"),
     ]
+    used_for = models.CharField(max_length=100, default="avatar", choices=USED_FOR)
 
     author_id = models.CharField(
         max_length=100, null=True, blank=True, verbose_name="author"
     )
     alt_text = models.CharField(max_length=50, default="post by")
-    used_for = models.CharField(max_length=100, default="avatar", choices=USED_FOR)
-    file = models.FileField(
-        upload_to=post_photo_path,
-        default="default/avatar.png",
-        null=True,
-        blank=True,
+    name = models.CharField(max_length=50, default="", null=True)
+
+    width = models.IntegerField(default=120)
+    height = models.IntegerField(default=120)
+
+    file_url = models.CharField(
+        max_length=50, default=os.environ.get("DEFAULT_AVATAR_PROFILE")
     )
 
     def __str__(self) -> str:
-        return self.file.name
-
-    @property
-    def get_size(self):
-        "Returns a tuple with the width and height"
-        image = Image.open(self.file.path)
-        return image.size
+        return self.alt_text
 
     @property
     def url(self):
-        return self.file.url
+        return self.file_url
 
     @property
-    def width(self):
-        return self.get_size[0]
-
-    @property
-    def height(self):
-        return self.get_size[1]
-
-    @property
-    def data(self):
+    def serialized_data(self):
         return {
             "url": self.url,
             "width": self.width,
-            "height": self.__height,
+            "height": self.height,
             "alt:text": self.alt_text,
         }
+
+    def get_serialized_data(self):
+        return self.serialized_data

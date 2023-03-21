@@ -30,7 +30,7 @@ class PostCommentCreate(CreateAPIView):
         _data["post"] = post.key
         _data["author"] = author.id
         _data["content"] = data["content"]
-        _data["parent"] = parent.id if parent else None
+        _data["parent"] = parent.pk if parent else None
         # _data['media'] = media_file if media_file else None,
 
         serializer = self.get_serializer(data=_data)
@@ -47,7 +47,8 @@ class PostCommentCreate(CreateAPIView):
 
     def perform_create(self, post: Post, serializer: PostViewSerializer):
         comment = serializer.save()
-        post.activity_rate += 1
+        if post.activity_rate:
+            post.activity_rate += 1
         post.save()
         post.author.account_rating += 1
         post.author.save()

@@ -26,6 +26,7 @@
 # dependencies
 venv_pakages/
 venv_modules/
+venv/
 
 .env
 .vscode

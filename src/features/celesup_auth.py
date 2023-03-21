@@ -29,4 +29,4 @@ class CelesupClientApi(BaseAuthentication):
         return None, None
 
     def authenticate_header(self, request):
-        return "1.2.2v;avs"
+        return "1.3.4v;avs"

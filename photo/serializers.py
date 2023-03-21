@@ -6,7 +6,13 @@ from .models import Photo
 from django.http import HttpRequest
 
 
-class PostViewSerializer(serializers.ModelSerializer):
+class PhotoCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photo
+        fields = ["file_url", "width", "height", "alt_text", "name"]
+
+
+class PhotoViewSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     width = serializers.SerializerMethodField()
     height = serializers.SerializerMethodField()
@@ -21,15 +27,8 @@ class PostViewSerializer(serializers.ModelSerializer):
         ]
 
     def get_url(self, obj: Photo):
-        request = self.context["request"]
-
-        if request:
-            protocol = "https://" if request.is_secure() else "http://"
-            domain = get_current_site(request).domain
-            url = obj.url
-            return protocol + domain + url
-
-        return obj.url
+        url = obj.file_url
+        return url
 
     def get_width(self, obj: Photo):
         return str(obj.width)

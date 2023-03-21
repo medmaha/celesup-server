@@ -12,6 +12,10 @@ from ..utils.temporal_db import Database
 
 from datetime import datetime, timedelta
 
+import os
+
+AUTH_TYPE = os.environ.get("AUTHENTICATION_MECHANISM")
+
 
 class SignupAccount(GenericAPIView):
     authentication_classes = []
@@ -19,10 +23,20 @@ class SignupAccount(GenericAPIView):
 
     validation_database = Database()
 
+    def get_cookie_id_from_req(self, cs_auth="cs-auth"):
+        cookie_id = self.request.COOKIES.get(cs_auth)
+        if cookie_id:
+            return cookie_id
+
+        cookie_id = self.request.headers.get(cs_auth)
+        if cookie_id:
+            return cookie_id
+
     def post(self, request, *args, **kwargs):
 
         data: dict = request.data.copy()
-        cookie_id = request.COOKIES.get("cs-auth")
+
+        cookie_id = self.get_cookie_id_from_req()
 
         if "initial" in data:
             field, value = get_auth_field(data)
@@ -33,11 +47,17 @@ class SignupAccount(GenericAPIView):
 
         if "password" in data and ("email" in data and "username" in data):
             username = data["username"]
-            password = validate_password(data["password"])
-            auth_cookie = request.COOKIES.get("cs-auth")
+            password = data["username"]
+            valid_pass = validate_password(data["password"])
 
-            if password and auth_cookie:
-                return self.stage_2(auth_cookie, username, password)
+            if valid_pass != "ok":
+                return Response(
+                    {"message": valid_pass.capitalize()},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+
+            if cookie_id:
+                return self.stage_2(cookie_id, username, password)
 
         return Response(
             {"message": "invalid credentials".capitalize()},
@@ -61,12 +81,24 @@ class SignupAccount(GenericAPIView):
 
         if cookie_id:
             response = Response({"message": "valid", field: value}, status=HTTP_200_OK)
-            expires_at = datetime.now() + timedelta(minutes=2)
-            response.set_cookie("cs-auth", cookie_id, expires=expires_at, httponly=True)
+
+            if AUTH_TYPE == "SESSION":
+                expires_at = datetime.now() + timedelta(minutes=2)
+                response.set_cookie(
+                    "cs-auth", cookie_id, expires=expires_at, httponly=True
+                )
+            else:
+                response.data = {
+                    "cs-auth": cookie_id,
+                    "credentials": {
+                        field: value,
+                        "message": "valid",
+                    },
+                }
             return response
 
         response = Response(
-            {"message": "aaaaaaaaaaaaaaaaa", "data": value}, status=HTTP_400_BAD_REQUEST
+            {"message": "Uncaught Error", "data": value}, status=HTTP_400_BAD_REQUEST
         )
         return response
 
@@ -78,8 +110,11 @@ class SignupAccount(GenericAPIView):
                 {"message": "User with this name already exist", "username": username},
                 status=HTTP_400_BAD_REQUEST,
             )
-            expires_at = datetime.now() + timedelta(minutes=3)
-            response.set_cookie("cs-auth", cookie, expires=expires_at, httponly=True)
+            if AUTH_TYPE == "SESSION":
+                expires_at = datetime.now() + timedelta(minutes=3)
+                response.set_cookie(
+                    "cs-auth", cookie, expires=expires_at, httponly=True
+                )
             return response
 
         query_lookup = {"key": "cookie_id", "value": cookie}
@@ -103,24 +138,44 @@ class SignupAccount(GenericAPIView):
         data = {
             "username": user["username"],
             "id": user["id"],
-            "avatar": "/images/avatar.png",
+            "avatar": User().avatar,
         }
 
         response = Response(data, status=HTTP_200_OK)
 
-        expires_at = datetime.now() + timedelta(minutes=15)
-        response.set_cookie("cs-auth", new_cookie_id, expires=expires_at, httponly=True)
-        response.set_cookie("cs-auth-val", new_cookie_id, expires=expires_at)
+        if AUTH_TYPE == "SESSION":
+            expires_at = datetime.now() + timedelta(minutes=15)
+            response.set_cookie(
+                "cs-auth", new_cookie_id, expires=expires_at, httponly=True
+            )
+            response.set_cookie("cs-auth-val", new_cookie_id, expires=expires_at)
+        else:
+            response.data = {
+                "user": data,
+                "cs-auth-val": new_cookie_id,
+            }
         return response
 
 
 def get_auth_field(data: dict):
+    """
+    Gets initial request field preference email/phone
+    * Returns a tuple of the field and its value (email | phone, str)
+    """
+
     allowed = ["email", "phone"]
+
     for field in allowed:
         if field in data and len(data.get(field)) > 2:
-            return (field.strip(), data[field])
+            f: str = field.strip()
+            v: str = data[field]
+            return (f, v)
 
 
 def validate_password(password: str):
-    if len(password) > 6:
-        return password
+
+    if len(password) < 6:
+        return "password to short (At least 6 characters required)"
+
+    if len(password) >= 6:
+        return "ok"

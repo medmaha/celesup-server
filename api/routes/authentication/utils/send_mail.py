@@ -16,6 +16,17 @@ class SendMail(threading.Thread):
     def run(self):
         if self.kwargs.get("verify_email"):
             self.send_email_verification_code(*self.args)
+        if self.kwargs.get("password_reset"):
+            self.send_password_reset_link(*self.args)
+
+    def send_password_reset_link(self, content, recipient):
+        mail = EmailMessage(
+            subject="[Celesup] Password Reset Link",
+            body=content,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[recipient],
+        )
+        return self.send(mail)
 
     def send_email_verification_code(self, content, recipient):
         """sends verifications email to the recipient list\n* This can take some minutes"""
@@ -25,7 +36,11 @@ class SendMail(threading.Thread):
             from_email=settings.EMAIL_HOST_USER,
             to=[recipient],
         )
+        return self.send(mail)
+
+    def send(self, mail: EmailMessage):
         sended = False
+        mail.content_subtype = "html"
         try:
             sended = mail.send(fail_silently=False)
         except Exception as e:

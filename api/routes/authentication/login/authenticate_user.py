@@ -21,7 +21,7 @@ AUTH_TYPE = os.environ.get("AUTHENTICATION_MECHANISM")
 
 class AuthenticateUser(TokenObtainPairView):
     """A view for getting access token and refreshing tokens"""
-
+    
     authentication_classes = []
     permission_classes = []
 

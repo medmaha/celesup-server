@@ -23,23 +23,19 @@ class User(AbstractUser):
 
     id = models.CharField(max_length=100, primary_key=True, blank=True, unique=True)
 
-    avatar = models.ImageField(
-        upload_to=avatar_path,
-        default="default/avatar.png",
-        null=True,
-        blank=True,
+    avatar = models.CharField(
+        max_length=300,
+        default="https://firebasestorage.googleapis.com/v0/b/media-celesup.appspot.com/o/profile-avatar%2Fdefault.jpg?alt=media&token=68e85c3f-7261-4589-a17a-f615c9b269a4",
     )
-
-    cover_img = models.FileField(
-        upload_to=cover_img_path,
-        default="default/cover.png",
-        null=True,
-        blank=True,
+    cover_img = models.CharField(
+        max_length=300,
+        default="https://firebasestorage.googleapis.com/v0/b/media-celesup.appspot.com/o/profile-avatar%2Fcs-social-images-index-background.jpeg?alt=media&token=19fee5c1-a89e-40f8-b580-85d7d2badf25",
     )
 
     email = models.EmailField(max_length=160, unique=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     username = models.CharField(max_length=100, unique=True, null=False, blank=False)
+    secret_token = models.CharField(max_length=160, null=True, blank=True)
 
     city = models.CharField(null=True, blank=True, max_length=150)
     biography = models.CharField(max_length=350, null=True, blank=True)
@@ -84,16 +80,16 @@ class User(AbstractUser):
 
     @property
     def full_name(self):
-        return self.name.capitalize() + " " + self.last_name.capitalize()
+        if self.name:
+            return self.name.capitalize() + " " + self.last_name.capitalize()
+        return ""
 
     @property
     def emails(self):
         em = []
         for email in [self.email, self.secondary_email]:
-            if email.text:
-                em.append(
-                    {"is_primary": email.text == self.email.text, "email": email.text}
-                )
+            if email:
+                em.append({"is_primary": email == self.email, "email": email.text})
         return em
 
     def __str__(self):
