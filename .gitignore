@@ -18,7 +18,7 @@
 # debug
 
 # local env files
-*.db
+# *.db
 *.pyc
 *.sqlite3
 *.log
@@ -37,6 +37,6 @@ media/
 build/
 fake_objects/[cfgpu]*.py
 
-/*/**/migrations/[0-9]*_*.py
-backend/[0-9]*_*.py
+# /*/**/migrations/[0-9]*_*.py
+# backend/[0-9]*_*.py
 /MEDIA_FILES/[ps]*/

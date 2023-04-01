@@ -1,5 +1,6 @@
 import uuid
 from features.models import UniqueId
+from users.models import User
 
 
 def id_generator():
@@ -29,7 +30,7 @@ def id_generator():
     return (id, lambda usedFor: save(usedFor, id))
 
 
-def get_profile_data(user):
+def get_profile_data(user: User):
 
     from api.routes.user.serializers import (
         AdminSerializer,
@@ -44,6 +45,6 @@ def get_profile_data(user):
         "supporter": SupporterSerializer(user.profile),
     }
     other = UserMiniInfoSeriaLizer(user)
-    profile = profiles.get(user.user_type.lower(), other)
+    profile = profiles.get(user.account_type.lower(), other)
 
     return profile.data

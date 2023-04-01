@@ -8,6 +8,25 @@ class UserViewSerializer(serializers.ModelSerializer):
         fields = ["username", "name", "avatar", "id"]
 
 
+class UsersProfileViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "name",
+            "city",
+            "avatar",
+            "gender",
+            "username",
+            "cover_img",
+            "biography",
+            "date_joined",
+            "account_type",
+            "public_email",
+            "email_privacy",
+        ]
+
+
 class UserStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

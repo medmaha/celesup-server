@@ -4,14 +4,12 @@ from rest_framework import status
 
 from django.shortcuts import get_object_or_404
 from users.models import User
-from post.models import Post
-from utilities.generators import get_profile_data
-from api.routes.user.serializers import UserDetailSerializer
+from users.serializers import UsersProfileViewSerializer
 
 
 class ProfileView(GenericAPIView):
 
-    serializer_class = UserDetailSerializer
+    serializer_class = UsersProfileViewSerializer
 
     # ? Another user profile
     def post(self, request, *args, **kwargs):
@@ -19,11 +17,9 @@ class ProfileView(GenericAPIView):
 
         user = get_object_or_404(User, username__iexact=username)
 
-        profile = get_profile_data(user)
-        serializer = self.get_serializer(user).data
+        serializer = self.get_serializer(user)
 
-        data = {**profile, **serializer, "posts": self.posts_count(user)}
-        return Response(data, status=200)
+        return Response(serializer.data, status=200)
 
     # ? own profile
     def get(self, request, *args, **kwargs):
@@ -32,11 +28,6 @@ class ProfileView(GenericAPIView):
         if not isinstance(user, User):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        profile = get_profile_data(user)
-        serializer = self.get_serializer(user).data
+        serializer = self.get_serializer(user)
 
-        data = {**profile, **serializer, "posts": self.posts_count(user)}
-        return Response(data, status=200)
-
-    def posts_count(self, author):
-        return Post.objects.filter(author=author).count()
+        return Response(serializer.data, status=200)

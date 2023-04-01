@@ -43,27 +43,16 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = [
             # ? identifiers
             "id",
+            "name",
             "city",
             "avatar",
             "gender",
             "username",
             "cover_img",
             "biography",
-            # ? activities
-            "posts_count",
-            # "share_count",
-            # "posts_count",
-            # "bookmark_count",
-            # "friends_count",
-            # "followers_count",
-            # "following_count",
-            # ? emails
-            "email",
-            "public_email",
-            "email_privacy",
-            "notification_email",
-            # ? dates
             "date_joined",
+            "account_type" "public_email",
+            "email_privacy",
         ]
 
 

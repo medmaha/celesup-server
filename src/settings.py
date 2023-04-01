@@ -8,14 +8,9 @@ AUTH_USER_MODEL = "users.User"
 
 SECRET_KEY = os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY"))
 
-DEBUG = bool(int(os.getenv("DEBUG")))
+DEBUG = bool(int(os.getenv("DEBUG") or 1))
 
-if not DEBUG:
-    host = lambda: [h.strip() for h in os.getenv("ALLOWED_HOSTS").split(",")]
-    ALLOWED_HOSTS = host()
-else:
-    ALLOWED_HOSTS = ["*"]
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -69,8 +64,8 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             # BASE_DIR / "api/templates",
-            BASE_DIR
-            / "build",
+            # BASE_DIR
+            # / "build",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -151,8 +146,8 @@ MEDIA_ROOT = BASE_DIR / "MEDIA_FILES/"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
-EMAIL_USE_TLS = int(os.getenv("EMAIL_USE_TLS"))
+EMAIL_PORT = int(os.getenv("EMAIL_PORT") or 0)
+EMAIL_USE_TLS = int(os.getenv("EMAIL_USE_TLS") or 0)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
