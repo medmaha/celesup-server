@@ -10,7 +10,8 @@ SECRET_KEY = os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY"))
 
 DEBUG = bool(int(os.getenv("DEBUG") or 1))
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1:8000", ".vercel.app"]
+
 
 # Application definition
 INSTALLED_APPS = [

@@ -67,12 +67,21 @@ class User(AbstractUser):
         from celebrity.models import Celebrity
         from supporter.models import Supporter
 
+        a = Celebrity.objects.filter(user=self).first()
+        c = Celebrity.objects.filter(user=self).first()
+        s = Celebrity.objects.filter(user=self).first()
+
+        return a or c or s
+
         user_type = self.account_type.lower()
+
         match user_type:
             case "celebrity":
                 return Celebrity.objects.get(user=self)
             case "supporter":
                 return Supporter.objects.get(user=self)
+            case "administrator":
+                return Administrator.objects.get(user=self)
             case "administrator":
                 return Administrator.objects.get(user=self)
             case _:
