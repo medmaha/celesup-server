@@ -16,6 +16,7 @@ from users.serializers import UserViewSerializer
 from users.models import User
 
 import re
+import random
 
 
 class AuthenticateUser(TokenObtainPairView):
@@ -42,7 +43,8 @@ class AuthenticateUser(TokenObtainPairView):
             user, _ = User.objects.get_or_create(email=email)
 
             if not user.username:
-                user.username = email.split("@")[0]
+                prefix = random.randrange(50, 1000)
+                user.username = email.split("@")[0] + f"-{prefix}"
             if not user.password:
                 user.set_password(password)
         else:
