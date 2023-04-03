@@ -6,11 +6,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 AUTH_USER_MODEL = "users.User"
 
-SECRET_KEY = os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY"))
+SECRET_KEY = os.getenv("CELESUP_SECRET_KEY")
 
 DEBUG = bool(int(os.getenv("DEBUG") or 1))
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1:8000", ".vercel.app"]
+
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    specified_origins = os.environ.get("ALLOWED_HOSTS")
+
+    if specified_origins:
+        origins = specified_origins
+        allowed_origins = lambda: [h.strip() for h in origins.split(",")]
+        ALLOWED_HOSTS = allowed_origins()
+    else:
+        ALLOWED_HOSTS = ["*"]
 
 
 # Application definition

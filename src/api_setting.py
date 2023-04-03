@@ -1,32 +1,7 @@
 import os
 from datetime import timedelta, datetime
 
-DEBUG = bool(int(os.environ.get("DEBUG")))
-
-expiration_days = datetime.now() + timedelta(days=7)
-expiration_time = expiration_days - datetime.now()
-
-
-USER_REGISTRATION_COOKIE_AGE = datetime.now() + timedelta(minutes=3)
-UNVERIFIED_USER_COOKIE_AGE = datetime.now() + timedelta(minutes=15)
-
-
-# SESSION_COOKIE_NAME = "cs-sessionkey"
-
-SESSION_COOKIE_AGE = int(expiration_time.total_seconds())
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = bool(int(os.environ.get("SESSION_COOKIE_SECURE")))
-SESSION_COOKIE_SAMESITE = "None" if SESSION_COOKIE_SECURE else "Lax"
-# SESSION_COOKIE_SAMESITE = "Lax"
-# SESSION_COOKIE_DOMAIN = os.environ.get("SESSION_COOKIE_DOMAIN")
-
-# CSRF_COOKIE_NAME = "cs-csrfkey"
-CSRF_COOKIE_AGE = SESSION_COOKIE_AGE
-CSRF_COOKIE_HTTPONLY = SESSION_COOKIE_HTTPONLY
-CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
-CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
-# CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
-
+DEBUG = bool(int(os.environ.get("DEBUG", 1)))
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -36,19 +11,23 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "celesup-api",
     "origin",
-    'cs-auth',
-    'cs-auth-val',
+    "cs-auth",
+    "cs-auth-val",
 ]
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 
 else:
-    allowed_host = lambda: [
-        h.strip() for h in os.environ.get("CORS_ORIGIN_WHITELIST").split(",")
-    ]
-    CORS_ORIGIN_WHITELIST = allowed_host()
+    specified_origins = os.environ.get("CORS_ORIGIN_WHITELIST")
 
+    if specified_origins:
+        origins = specified_origins
+        allowed_origins = lambda: [h.strip() for h in origins.split(",")]
+        CORS_ORIGIN_WHITELIST = allowed_origins()
+
+    else:
+        CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
@@ -77,5 +56,5 @@ SIMPLE_JWT = {
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "token_id",
-    "SIGNING_KEY": os.getenv("CELESUP_SECRET_KEY", os.getenv("SECRET_KEY")),
+    "SIGNING_KEY": os.getenv("CELESUP_SECRET_KEY"),
 }

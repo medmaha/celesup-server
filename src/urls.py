@@ -7,14 +7,14 @@ from django.conf.urls.static import static
 
 from django.views.generic import TemplateView
 
-# import debug_toolbar
+from api.urls import urlpatterns as api_url_patterns
+
 
 urlpatterns = [
     path("administrator/", admin.site.urls),
-    path("", include("api.urls", namespace="api")),
     path("", TemplateView.as_view(template_name="index.html")),
+    # path("", include("api.urls", namespace="api")),
 ]
 
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += api_url_patterns

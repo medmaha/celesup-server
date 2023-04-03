@@ -12,6 +12,7 @@
 /.next/
 /out/
 
+*.bat
 # production
 /build
 
