@@ -13,7 +13,9 @@ from api.routes.authentication.utils import Database
 
 from users.serializers import UserViewSerializer
 
-from api.library.cookies import CSCookie
+from users.models import User
+
+import re
 
 
 class AuthenticateUser(TokenObtainPairView):
@@ -29,43 +31,43 @@ class AuthenticateUser(TokenObtainPairView):
 
         data = request.data.copy()
 
-        email = data.get("email") or data.get("username") or data.get("phone")
-        password = data.get("password")
+        email = data.get("email") or data.get("username") or data.get("phone", "")
+        password = data.get("current-password")
 
-        user = authenticate(request, email=email, password=password)
+        pattern = "@guest.com"
+
+        guestUser = re.search(pattern, email)
+
+        if guestUser:
+            user, _ = User.objects.get_or_create(email=email)
+            if not user.password:
+                user.set_password(password)
+        else:
+            user = authenticate(request, email=email, password=password)
 
         if user:
-            # tokens = self.jwt_token_generator.tokens(user,  self.get_serializer)
-
             self.serializer_class = UserViewSerializer
-
             tokens = self.jwt_token_generator.tokens(
                 user, self.get_serializer, context={"request": request}
             )
             response = Response({"tokens": tokens}, status=status.HTTP_200_OK)
-
             return response
 
         _user = self.validation_database.authenticate(email, password)
-
         if _user:
-
             data = {
                 "id": _user["id"],
-                "avatar": "/images/avatar.png",
-                "username": _user["username"],
                 "name": _user["name"],
+                "avatar": User().avatar,
+                "username": _user["username"],
+                "cover_img": User().cover_img,
             }
             response = Response(data, status=status.HTTP_200_OK)
-
             return response
 
         response = Response(
             {"message": "Credentials not found!"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-        cookies = CSCookie(response=response)
-        cookies.delete("cs-auth")
-        cookies.delete("cs-auth-val")
 
         return response
