@@ -40,6 +40,9 @@ class AuthenticateUser(TokenObtainPairView):
 
         if guestUser:
             user, _ = User.objects.get_or_create(email=email)
+
+            if not user.username:
+                user.username = email.split("@")[0]
             if not user.password:
                 user.set_password(password)
         else:
