@@ -47,6 +47,8 @@ class AuthenticateUser(TokenObtainPairView):
                 user.username = email.split("@")[0] + f"-{prefix}"
             if not user.password:
                 user.set_password(password)
+
+            user.save()
         else:
             user = authenticate(request, email=email, password=password)
 
