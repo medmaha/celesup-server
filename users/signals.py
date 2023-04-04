@@ -55,7 +55,7 @@ def set_account_profile(sender, instance, created, **kwargs):
                 Administrator.objects.create(user=instance, id=instance.id)
 
 
-@receiver(pre_delete, sender=User)
+# @receiver(pre_delete, sender=User)
 def delete_photo(sender, instance: Photo, **kwargs):
     """
     deletes all the user's photo right before the the user is delete
