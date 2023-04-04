@@ -6,13 +6,13 @@ import threading
 
 class SendMail(threading.Thread):
     def __init__(self, *args, **kwargs):
-        # threading.Thread.__init__(self)
         self.args = args
         self.kwargs = kwargs
+        threading.Thread.__init__(self)
 
     def proceed(self):
-        # self.start()
-        self.run()
+        self.start()
+        # self.run()
 
     def run(self):
         if self.kwargs.get("verify_email"):

@@ -8,9 +8,8 @@
 *.log
 .env
 .vscode
-#*.db
-
-
+*.db
+# DATABASE.db
 # local folder
 media/
 __pycache__/
