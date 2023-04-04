@@ -1,43 +1,22 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
 
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-*.bat
-# production
-/build
-
-# debug
-
 # local env files
 # *.db
+*.bat
 *.pyc
 *.sqlite3
 *.log
-
-# dependencies
-venv_pakages/
-venv_modules/
-venv/
-
 .env
 .vscode
 
 __pycache__/
 
 media/
-build/
 fake_objects/[cfgpu]*.py
 
-# /*/**/migrations/[0-9]*_*.py
-# backend/[0-9]*_*.py
-/MEDIA_FILES/[ps]*/
+# dependencies
+venv_modules/
+venv/
