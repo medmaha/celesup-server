@@ -8,25 +8,6 @@ class UserViewSerializer(serializers.ModelSerializer):
         fields = ["username", "name", "avatar", "id"]
 
 
-class UsersProfileViewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "name",
-            "city",
-            "avatar",
-            "gender",
-            "username",
-            "cover_img",
-            "biography",
-            "date_joined",
-            "account_type",
-            "public_email",
-            "email_privacy",
-        ]
-
-
 class UserStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -49,10 +30,29 @@ class UserDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
+class UsersProfileViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "name", "avatar", "id"]
+        fields = [
+            "id",
+            "name",
+            "city",
+            "avatar",
+            "gender",
+            "username",
+            "cover_img",
+            "biography",
+            "date_joined",
+            "account_type",
+            "public_email",
+            "email_privacy",
+        ]
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name", "avatar", "cover_img", "city", "gender", "biography"]
 
 
 class UserAccountSerializer(serializers.ModelSerializer):

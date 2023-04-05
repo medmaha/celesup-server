@@ -1,59 +1,50 @@
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView, GenericAPIView
+from rest_framework.generics import UpdateAPIView
 from django.shortcuts import get_object_or_404
 from users.models import User
-from .serializers import (
-    UserEditSerializer,
-    UserDetailSerializer,
-    UserMETADATASeriaLizer,
-)
-from utilities.generators import get_profile_data
+from users.serializers import UsersProfileViewSerializer, UserProfileUpdateSerializer
+
+from api.routes.authentication.utils.tokens import GenerateToken
 
 
 class ProfileEdit(UpdateAPIView):
-    serializer_class = UserEditSerializer
+    serializer_class = UserProfileUpdateSerializer
+
+    token_generator = GenerateToken()
 
     def update(self, request, *args, **kwargs):
         user = get_object_or_404(User, id=request.data.get("profileId"))
 
-        data = request.data.copy()
+        if user != request.user:
+            return Response(
+                {"message": "unauthorized"}, status=status.HTTP_403_FORBIDDEN
+            )
 
-        for field in data:
+        data: dict = request.data.copy()
+
+        # delete empty values
+        for field in data.copy().keys():
             if not data[field]:
                 del data[field]
+            if field == "gender":
+                data["gender"] = data["gender"].lower()
 
         # ? setter
         serializer = self.get_serializer(instance=user, data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        files = ["avatar", "cover_img"]
-        for file in files:
-            if file in data:
-                data[file] = serializer.data[file]
+        user = User.objects.get(id=user.id)
 
-        del data["profileId"]
-        del data["refreshToken"]
+        self.serializer_class = UsersProfileViewSerializer
 
-        return Response(data, status=status.HTTP_202_ACCEPTED)
+        tokens = self.token_generator.tokens(
+            user, self.get_serializer, context={"request": request}
+        )
 
+        serializer = self.get_serializer(user, context={"request": request})
 
-class AccountEdit(GenericAPIView):
-
-    serializer_class = UserMETADATASeriaLizer
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-
-        if not isinstance(user, User):
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = self.filter_queryset(self.get_queryset(user))
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, *args, **kwargs):
-        data = request.data.copy()
-
-        return super().put(request, *args, **kwargs)
+        return Response(
+            {"user": serializer.data, "tokens": tokens}, status=status.HTTP_200_OK
+        )
