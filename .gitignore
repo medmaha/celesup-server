@@ -9,8 +9,10 @@
 .env
 .vscode
 *.db
+
 # DATABASE.db
 # local folder
+
 media/
 __pycache__/
 fake_objects/

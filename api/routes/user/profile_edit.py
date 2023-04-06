@@ -27,7 +27,8 @@ class ProfileEdit(UpdateAPIView):
         for field in data.copy().keys():
             if not data[field]:
                 del data[field]
-            if field == "gender":
+                continue
+            if field == "gender" and data["gender"]:
                 data["gender"] = data["gender"].lower()
 
         # ? setter

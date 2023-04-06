@@ -1,10 +1,10 @@
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from users.models import User
+from users.serializers import UserViewSerializer
 from notification.models import Notification
 
 from .serializers import NotificationSerializer
-from ..user.serializers import UserMiniInfoSeriaLizer
 
 
 class NotificationList(ListAPIView):
@@ -19,10 +19,10 @@ class NotificationList(ListAPIView):
             recipient=request.user, is_viewed=True
         )[:3]
 
-        new_serializer = self.get_serializer(new_notifications, many=True)
-        old_serializer = self.get_serializer(old_notifications, many=True)
+        new_serializer = NotificationSerializer(new_notifications, many=True)
+        old_serializer = NotificationSerializer(old_notifications, many=True)
 
-        self.serializer_class = UserMiniInfoSeriaLizer
+        self.serializer_class = UserViewSerializer
 
         for data in new_serializer.data:
             sender = User.objects.get(id=data["sender"])
