@@ -26,7 +26,13 @@ class Searching(GenericAPIView):
         hashtags_query = []
         users_query = []
 
-        if query and len(query) < 3:
+        if query == "@*.":
+            users_query = UserViewSerializer(
+                User.objects.filter(),
+                many=True,
+            ).data
+
+        elif query and len(query) < 3:
             # hashtags_query = HashTagDetailSerializer(
             #     HashTag.objects.filter(Q(tag_text__startswith=query))[:3], many=True
             # ).data
