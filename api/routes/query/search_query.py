@@ -3,8 +3,8 @@ import random
 
 from django.db.models import Q
 from users.models import User
+from users.serializers import UserViewSerializer
 from post.models import Post
-from api.routes.user.serializers import UserDetailSerializer
 from api.routes.posts.serializers import PostDetailSerializer
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -27,12 +27,14 @@ class Searching(GenericAPIView):
         users_query = []
 
         if query and len(query) < 3:
-            hashtags_query = HashTagDetailSerializer(
-                HashTag.objects.filter(Q(tag_text__startswith=query))[:3], many=True
-            ).data
+            # hashtags_query = HashTagDetailSerializer(
+            #     HashTag.objects.filter(Q(tag_text__startswith=query))[:3], many=True
+            # ).data
 
-            users_query = UserDetailSerializer(
-                User.objects.filter(Q(username__startswith=query))[:3],
+            users_query = UserViewSerializer(
+                User.objects.filter(
+                    Q(username__icontains=query) | Q(name__icontains=query)
+                )[:3],
                 many=True,
             ).data
 
@@ -40,31 +42,33 @@ class Searching(GenericAPIView):
 
             query = query[: len(query) - 1]
 
-            hashtags_query = HashTagDetailSerializer(
-                HashTag.objects.filter(Q(tag_text__icontains=query))[:3], many=True
-            ).data
+            # hashtags_query = HashTagDetailSerializer(
+            #     HashTag.objects.filter(Q(tag_text__icontains=query))[:3], many=True
+            # ).data
 
-            users_query = UserDetailSerializer(
-                User.objects.filter(Q(username__icontains=query))[:3],
+            users_query = UserViewSerializer(
+                User.objects.filter(
+                    Q(username__icontains=query) | Q(name__icontains=query)
+                )[:3],
                 many=True,
             ).data
 
         elif len(query) >= 3:
-            hashtags_query = HashTagDetailSerializer(
-                HashTag.objects.filter(Q(tag_text__icontains=query))[:3], many=True
-            ).data
+            # hashtags_query = HashTagDetailSerializer(
+            #     HashTag.objects.filter(Q(tag_text__icontains=query))[:3], many=True
+            # ).data
 
-            users_query = UserDetailSerializer(
-                User.objects.filter(Q(username__icontains=query))[:3],
+            users_query = UserViewSerializer(
+                User.objects.filter(
+                    Q(username__icontains=query) | Q(name__icontains=query)
+                )[:3],
                 many=True,
             ).data
 
-        package = package_query(
-            hashtags_query, lookup="tag_text", object_type="hashtag"
-        )
-        package = package_query(
-            users_query, lookup="username", object_type="user", items=package
-        )
+        # package = package_query(
+        #     hashtags_query, lookup="tag_text", object_type="hashtag"
+        # )
+        package = package_query(users_query, lookup="username", object_type="user")
 
         package = list(package.values())
         random.shuffle(package)
@@ -72,7 +76,7 @@ class Searching(GenericAPIView):
         return Response(package, status=200)
 
 
-def package_query(query: list, lookup: str, object_type: str, pk="id", items={}):
+def package_query(query, lookup: str, object_type: str, pk="id", items={}):
 
     package = {}
 
@@ -81,6 +85,7 @@ def package_query(query: list, lookup: str, object_type: str, pk="id", items={})
             "id": instance[pk],
             "text": instance[lookup].capitalize(),
             "object": object_type,
+            "name": instance.get("name"),
             "avatar": instance.get("avatar", "media/no/avatar/provided"),
         }
 

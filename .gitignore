@@ -10,7 +10,7 @@
 .vscode
 *.db
 
-# DATABASE.db
+DATABASE.db
 # local folder
 
 media/
