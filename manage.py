@@ -12,7 +12,8 @@ def main():
     try:
         dotenv.read_dotenv()
     except:
-        dotenv.load_dotenv()
+
+        dotenv.load_dotenv()  # type: ignore
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.settings")
     try:
