@@ -4,8 +4,9 @@ from users.models import User
 
 class Notification(models.Model):
     sender = models.ForeignKey(
-        User, on_delete=models.CASCADE, blank=True, related_name="sender"
+        User, on_delete=models.CASCADE, blank=True, related_name="sender", null=True
     )
+    from_platform = models.BooleanField(default=False, null=True, blank=True)
     recipient = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=True, related_name="recipient"
     )

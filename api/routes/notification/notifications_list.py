@@ -8,7 +8,6 @@ from .serializers import NotificationSerializer
 
 
 class NotificationList(ListAPIView):
-
     serializer_class = NotificationSerializer
 
     def list(self, request, *args, **kwargs):
@@ -25,12 +24,14 @@ class NotificationList(ListAPIView):
         self.serializer_class = UserViewSerializer
 
         for data in new_serializer.data:
-            sender = User.objects.get(id=data["sender"])
-            data["sender"] = self.get_serializer(sender).data
+            if data.get("sender"):
+                sender = User.objects.get(id=data["sender"])
+                data["sender"] = self.get_serializer(sender).data
 
         for data in old_serializer.data:
-            sender = User.objects.get(id=data["sender"])
-            data["sender"] = self.get_serializer(sender).data
+            if data.get("sender"):
+                sender = User.objects.get(id=data["sender"])
+                data["sender"] = self.get_serializer(sender).data
 
         response = {"new": new_serializer.data, "old": old_serializer.data}
 

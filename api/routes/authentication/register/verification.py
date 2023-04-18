@@ -1,14 +1,14 @@
-from urllib import response
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED
-from django.contrib.auth import login
 from rest_framework import status
 
-from ..utils.tokens import GenerateToken
+from notification.models import Notification
 
-from ..utils.temporal_db import Database
-from ..utils.send_mail import SendMail
+from api.routes.authentication.utils.tokens import GenerateToken
+
+from api.routes.authentication.utils.temporal_db import Database
+from api.routes.authentication.utils.send_mail import SendMail
 from django.template.loader import render_to_string
 
 from users.models import User
@@ -37,7 +37,6 @@ class VerifyUserAccount(GenericAPIView):
             return cookie_id
 
     def get(self, request, *args, **kwargs):
-
         auth_cookie = self.get_cookie_id_from_req()
 
         if not auth_cookie:
@@ -50,15 +49,16 @@ class VerifyUserAccount(GenericAPIView):
             auth_user_data = self.validation_database.retrieve(db_lookup, raw=True)
 
             send_mail_callback = None
-            if not auth_user_data.get("mailed"):
+            if auth_user_data and not bool(int(auth_user_data.get("mailed", 0))):
                 if auth_user_data.get("email"):
-
                     email_address = auth_user_data["email"]
                     verification_code = self.validation_database.get_verification_code()
                     content = render_to_string(
                         "api/email_verification.html",
                         {
-                            "username": auth_user_data.get("username").capitalize(),
+                            "username": auth_user_data.get(
+                                "username", "user-name"
+                            ).capitalize(),
                             "code": f"C-{verification_code}",
                         },
                         request,
@@ -69,14 +69,14 @@ class VerifyUserAccount(GenericAPIView):
                     self.validation_database.update(
                         "code", verification_code, db_lookup
                     )
-                    self.validation_database.update("mailed", int(True), db_lookup)
+                    self.validation_database.update("mailed", str(int(True)), db_lookup)
                 else:
                     # Todo
                     "Phone number specified"
                     pass
 
             if send_mail_callback:
-                self.validation_database.update("mailed", 1, db_lookup)
+                self.validation_database.update("mailed", "1", db_lookup)
                 send_mail_callback()
 
             new_cookie = self.validation_database.create_cookie()
@@ -113,8 +113,9 @@ class VerifyUserAccount(GenericAPIView):
             db_lookup = {"key": "code", "value": CODE}
             valid_code = self.validation_database.exists({**db_lookup})
 
-            if valid_code and valid_cookie:
-                client = self.validation_database.retrieve(db_lookup, raw=True)
+            client = self.validation_database.retrieve(db_lookup, raw=True)
+
+            if client and valid_code and valid_cookie:
                 user = User(
                     email=client["email"],
                     username=client["username"],
@@ -131,21 +132,33 @@ class VerifyUserAccount(GenericAPIView):
                         ),
                     }
                 )
-                if AUTH_TYPE == "SESSION":
-                    login(request, user)
-                else:
-                    self.serializer_class = UserViewSerializer
-                    tokens = GenerateToken().tokens(
-                        user, self.get_serializer, context={"request": request}
-                    )
-                    response.data = {
-                        "message": response.data["message"],
-                        "tokens": tokens,
-                    }
 
-                if AUTH_TYPE == "SESSION":
-                    response.delete_cookie("cs-auth")
-                    response.delete_cookie("cs-auth-val")
+                alert_1 = Notification()
+                alert_1.from_platform = True
+                alert_1.recipient = user
+                alert_1.action = "Celehub welcomes you {}"
+                alert_1.hint_img = "/images/welcome.png"
+                alert_1.save()
+
+                alert_2 = Notification()
+                alert_2.from_platform = True
+                alert_2.recipient = user
+                alert_2.action = (
+                    "You will see both your new and old notifications here."
+                )
+                alert_2.hint_img = "/images/info.png"
+                alert_2.save()
+
+                # Todo: Email new_user and welcome him/her
+
+                self.serializer_class = UserViewSerializer
+                tokens = GenerateToken().tokens(
+                    user, self.get_serializer, context={"request": request}
+                )
+                response.data = {
+                    "message": response.data["message"] if response.data else "",
+                    "tokens": tokens,
+                }
 
                 self.validation_database.delete(db_lookup)
                 return response
@@ -180,7 +193,7 @@ class VerifyUserAccount(GenericAPIView):
 
         NEW_CODE = self.validation_database.update_code(db_lookup)
 
-        if NEW_CODE:
+        if NEW_CODE and auth_cookie:
             response = Response(
                 {
                     "message": "We've resend the verification code the credentials you provided"

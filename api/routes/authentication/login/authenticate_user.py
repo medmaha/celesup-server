@@ -1,13 +1,11 @@
-from datetime import datetime, timedelta
-import os
-import uuid
-from django.contrib.auth import authenticate, login, logout
-from django.conf import settings
+from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework import status
 
-from ..utils.tokens import GenerateToken
+from notification.models import Notification
+
+from api.routes.authentication.utils.tokens import GenerateToken
 
 from api.routes.authentication.utils import Database
 
@@ -29,10 +27,9 @@ class AuthenticateUser(TokenObtainPairView):
     validation_database = Database()
 
     def post(self, request, *args, **kwargs):
-
         data = request.data.copy()
 
-        email = data.get("email") or data.get("username") or data.get("phone", "")
+        email: str = data.get("email") or data.get("username") or data.get("phone", "")
         password = data.get("current-password")
 
         pattern = "@guest.com"
@@ -40,15 +37,38 @@ class AuthenticateUser(TokenObtainPairView):
         guestUser = re.search(pattern, email)
 
         if guestUser:
-            user, _ = User.objects.get_or_create(email=email)
+            prefix = random.randrange(50, 1000)
 
-            if not user.username:
-                prefix = random.randrange(50, 1000)
+            user, created = User.objects.get_or_create(email=email)
+
+            if not created:
+                user = authenticate(email=email, password=password)
+                if not user:
+                    return Response(
+                        {"message": "Wrong credentials provided"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            else:
                 user.username = email.split("@")[0] + f"-{prefix}"
-            if not user.password:
                 user.set_password(password)
 
-            user.save()
+                user.save()
+                alert_1 = Notification()
+                alert_1.from_platform = True
+                alert_1.recipient = user
+                alert_1.action = "Celehub welcomes you"
+                alert_1.hint_img = "/images/welcome.png"
+                alert_1.save()
+
+                alert_2 = Notification()
+                alert_2.from_platform = True
+                alert_2.recipient = user
+                alert_2.action = (
+                    "You will see both your new and old notifications here."
+                )
+                alert_2.hint_img = "/images/info.png"
+                alert_2.save()
         else:
             user = authenticate(request, email=email, password=password)
 

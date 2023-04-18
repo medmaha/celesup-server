@@ -33,7 +33,6 @@ class SignupAccount(GenericAPIView):
             return cookie_id
 
     def post(self, request, *args, **kwargs):
-
         data: dict = request.data.copy()
 
         cookie_id = self.get_cookie_id_from_req()
@@ -50,7 +49,7 @@ class SignupAccount(GenericAPIView):
             password = data["username"]
             valid_pass = validate_password(data["password"])
 
-            if valid_pass != "ok":
+            if valid_pass is not None:
                 return Response(
                     {"message": valid_pass.capitalize()},
                     status=HTTP_400_BAD_REQUEST,
@@ -135,6 +134,11 @@ class SignupAccount(GenericAPIView):
 
         user = self.validation_database.retrieve(query_lookup, raw=True)
 
+        if not user:
+            response = Response(
+                {"message": "invalid credentials"}, status=HTTP_401_UNAUTHORIZED
+            )
+            return response
         data = {
             "username": user["username"],
             "id": user["id"],
@@ -157,7 +161,7 @@ class SignupAccount(GenericAPIView):
         return response
 
 
-def get_auth_field(data: dict):
+def get_auth_field(data: dict) -> tuple[(None | str, str)]:
     """
     Gets initial request field preference email/phone
     * Returns a tuple of the field and its value (email | phone, str)
@@ -166,14 +170,15 @@ def get_auth_field(data: dict):
     allowed = ["email", "phone"]
 
     for field in allowed:
-        if field in data and len(data.get(field)) > 2:
+        if field in data and len(data.get(field, 0)) > 2:
             f: str = field.strip()
             v: str = data[field]
             return (f, v)
 
+    return (None, "")
+
 
 def validate_password(password: str):
-
     if len(password) < 6:
         return "password to short (At least 6 characters required)"
 
