@@ -6,6 +6,7 @@ from rest_framework.generics import CreateAPIView
 
 from post.models import Post
 from post.serializer import PostViewSerializer, PostCreateSerializer
+from notification.models import Notification
 
 
 class PostRepost(CreateAPIView):
@@ -24,6 +25,16 @@ class PostRepost(CreateAPIView):
 
                 serializer = self.get_serializer(post, context={"request": request})
 
+                user.save()
+                alert_1 = Notification()
+                alert_1.from_platform = True
+                alert_1.recipient = child_post.author
+                alert_1.sender = user
+                alert_1.action = "Shares your post"
+                alert_1.save()
+                alert_1.hint = (post.caption or post.excerpt or "",)[0][:100]
+                alert_1.hint_img = post.picture.file_url if post.picture else None
+                alert_1.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         except:
             pass
