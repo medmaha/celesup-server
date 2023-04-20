@@ -2,6 +2,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
 from hashtags.models import HashTag
 from post.models import Post
+from django.utils.text import slugify
 
 from utilities.generators import id_generator
 
@@ -19,7 +20,6 @@ def assign_user_id(sender, instance, *args, **kwargs):
 
 @receiver(post_save, sender=Post)
 def stream_post(sender, instance, created, **kwargs):
-
     hashtag = instance.hashtags
 
     if not hashtag:
@@ -29,14 +29,15 @@ def stream_post(sender, instance, created, **kwargs):
 
     for tag in hashtags:
         try:
-            tag = tag.split("#")[1].strip().lower()
+            __tag = tag.split("#")[1].strip().lower()
         except:
-            tag = tag.strip().lower()
+            __tag = tag.strip().lower()
 
-        existing_hashtags = HashTag.objects.filter(tag_text=tag).exists()
+        __tag = slugify(tag)
+        # existing_hashtags = HashTag.objects.filter(tag_text=__tag).exists()
 
-        # TODO add hashtag object to the matching tag
-        if existing_hashtags:
-            continue
+        # # # TODO add hashtag object to the matching tag
+        # if existing_hashtags:
+        #     continue
 
-        HashTag.objects.create(tag_text=tag, object=instance, object_id=instance.key)
+        HashTag.objects.create(tag_text=__tag, object=instance, object_id=instance.key)

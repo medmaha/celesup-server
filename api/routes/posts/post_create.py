@@ -14,6 +14,8 @@ class PostCreate(CreateAPIView):
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
 
+        print(data)
+
         if not len(data.keys()):
             return Response(
                 "Bad request field required", status=status.HTTP_400_BAD_REQUEST

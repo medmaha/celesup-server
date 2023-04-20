@@ -8,13 +8,12 @@ from . import (
     PostRetrieve,
     LikePost,
     PostStatistics,
-    ExplorePosts,
+    DiscoverPosts,
     PostRepost,
 )
 
 posts_url_patterns = [
     # feed
-    path("explore", ExplorePosts.as_view()),
     path("posts", PostsList.as_view()),
     path("posts/create", PostCreate.as_view()),
     path("posts/repost", PostRepost.as_view()),
@@ -24,4 +23,6 @@ posts_url_patterns = [
     # interact
     path("posts/like", LikePost.as_view()),
     path("posts/stats", PostStatistics.as_view()),
+    # discover posts
+    path("discover", DiscoverPosts.as_view()),
 ]

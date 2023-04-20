@@ -18,24 +18,33 @@ class PostRepost(CreateAPIView):
         try:
             data = request.data.copy()
             child_post = get_object_or_404(Post, key=data.get("post_id"))
+
+            # post with user thoughts
             if data.get("excerpt"):
-                post = Post(author=user, excerpt=data.get("excerpt"), child=child_post)
-                post.save()
-                child_post.shares.add(user)
+                post = Post.objects.create(
+                    author=user, excerpt=data.get("excerpt"), child=child_post
+                )
 
-                serializer = self.get_serializer(post, context={"request": request})
+            # repost to feeds
+            else:
+                post = Post.objects.create(author=user, child=child_post)
 
-                user.save()
-                alert_1 = Notification()
-                alert_1.from_platform = True
-                alert_1.recipient = child_post.author
-                alert_1.sender = user
-                alert_1.action = "Shares your post"
-                alert_1.save()
-                alert_1.hint = (post.caption or post.excerpt or "",)[0][:100]
-                alert_1.hint_img = post.picture.file_url if post.picture else None
-                alert_1.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            child_post.shares.add(user)
+            serializer = self.get_serializer(post, context={"request": request})
+
+            user.save()
+            alert_1 = Notification()
+            alert_1.from_platform = True
+            alert_1.recipient = child_post.author
+            alert_1.sender = user
+            alert_1.action = "Shares your post"
+            alert_1.save()
+            alert_1.hint = (post.caption or post.excerpt or "",)[0][:100]
+            alert_1.hint_img = post.picture.file_url if post.picture else None
+            alert_1.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         except:
             pass
         return Response(status=status.HTTP_400_BAD_REQUEST)
